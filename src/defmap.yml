@@ -1,0 +1,54 @@
+################ Map Metadata File #################
+#                      v0.1                        #
+#--------------------------------------------------#
+#                     Options                      #
+#--------------------------------------------------#
+#                                                  #
+#                     General                      #
+#                                                  #
+#                                                  #
+#--------------------------------------------------#
+#                                                  #
+#                   Permissions                    #
+#                                                  #
+####################################################
+
+Map Name: defMap
+Description: Default MapMetadata Configuration
+Max Players: 12
+Max Teams: 2
+World: world
+Map Center:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+Spectator Spawn:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+Default Bounds:
+  Number Of Bounds: 0
+In Game Bounds:
+  Number Of Bounds: 0
+Spectator Bounds:
+  Number Of Bounds: 0
+Spawn Areas:
+  Team0:
+    Area Count: 0
+  Team1:
+    Area Count: 0
+Spawn Points:
+  Team0:
+    Point Count: 0
+  Team1:
+    Point Count: 0
+Team0:
+  Color: ;1
+  Name: Blue
+Team1:
+  Color: ;C
+  Name: Red

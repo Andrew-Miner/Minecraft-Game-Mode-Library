@@ -1,0 +1,59 @@
+###########Paintball Configuration File#############
+#                      v0.1                        #
+#--------------------------------------------------#
+#                     Options                      #
+#--------------------------------------------------#
+#                                                  #
+#                     General                      #
+#                                                  #
+#                                                  #
+#--------------------------------------------------#
+#                                                  #
+#                   Permissions                    #
+#                                                  #
+####################################################
+
+SQL Info:
+  SQLite:
+    Use SQLite: true
+    Database: paintball_data
+  MySQL:
+    Host: 192.168.2.1
+    Port: 3306
+    Database: paintball_data
+    Username: root
+    Password: password
+General:
+  Max Lobby Count: 1
+  Max Players Per Lobby: 12
+  Max Team Count: 2
+Default Spawn Kit:
+  Team 1:
+    Helmet: 310
+    Chestplate: 311
+    Leggings: 312
+    Boots: 313
+    Weapon: 261
+  Team 2:
+    Helmet: 306
+    Chestplate: 307
+    Leggings: 308
+    Boots: 309
+    Weapon: 261
+Spawn:
+  World: world
+  Point:
+  - -51.5
+  - 62.0
+  - 101.5
+  Bounds:
+    Number Of Bounds: 1
+    B0:
+      P0:
+      - -70.0
+      - 112.0
+      - 74.0
+      P1:
+      - -34.0
+      - 62.0
+      - 129.0

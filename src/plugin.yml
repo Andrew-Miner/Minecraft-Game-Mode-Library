@@ -1,8 +1,9 @@
-main: com.gmail.andrew.miner3.plugins.Paintball.PluginManager
+main: SmokyMiner.Examples.Paintball.PaintballPlugin
 name: Paintball
-version: 0.1
+version: 0.2
 author: SmokyMiner
 description: Robust Paintball Minigame
+api-version: 1.13
 commands:
   join:
     description: Join a piantball lobby

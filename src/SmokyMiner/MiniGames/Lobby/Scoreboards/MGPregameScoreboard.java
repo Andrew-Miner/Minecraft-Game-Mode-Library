@@ -31,6 +31,15 @@ public class MGPregameScoreboard extends MGTimerScoreboard implements MGTimerEve
 	}
 	
 	@Override
+	public void resetScoreboard()
+	{	
+		playerList.unregister();
+		playerList = board.registerNewObjective("preGame" + lobby.getLobbyId().toString().substring(0, 7), "dummy");
+		playerList.setDisplaySlot(DisplaySlot.SIDEBAR);
+		refreshPlayerList();
+	}
+	
+	@Override
 	public void close()
 	{
 		timer.resetTimer();
@@ -66,7 +75,7 @@ public class MGPregameScoreboard extends MGTimerScoreboard implements MGTimerEve
 	@Override
 	public void timerFinished()
 	{
-		lobby.startMatch();
+		lobby.nextStage(true);
 		resetTimer();
 	}
 	

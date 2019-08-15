@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import SmokyMiner.MiniGames.Lobby.MGPregameLobby;
 import SmokyMiner.Minigame.Main.MGManager;
 
 public class MGMapMethods 
@@ -454,5 +455,22 @@ public class MGMapMethods
 			plugin.getLogger().info("    P1: " + bound.loc2.getX() + " " + bound.loc2.getY() + " " + bound.loc2.getZ());
 			c++;
 		}
+	}
+	
+	public static MGMapMetadata loadSpawnMap(MGManager manager) 
+	{
+		String dir = "Spawn";
+		String world = manager.getConfig().getString(dir + ".World");
+		
+		ArrayList<Double> point = (ArrayList<Double>) manager.getConfig().getDoubleList(dir + ".Point");
+		Location spawn = new Location(Bukkit.getWorld(world), point.get(0), point.get(1), point.get(2));
+		
+		ArrayList<MGBound> bounds = MGMapMethods.loadBounds(manager.getConfig(), dir + ".Bounds");
+		Bukkit.getLogger().info("# OF BOUNDS" + bounds.size());
+		
+		MGMapMetadata spawnMap = new MGMapMetadata(manager, "Spawn", "Spawn Lobby", 
+				manager.plugin().getServer().getMaxPlayers(), 1, world, bounds, spawn, spawn);
+		
+		return spawnMap;
 	}
 }

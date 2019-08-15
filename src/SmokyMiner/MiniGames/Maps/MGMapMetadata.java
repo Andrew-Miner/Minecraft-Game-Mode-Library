@@ -552,7 +552,7 @@ public class MGMapMetadata
 		}
 		else
 		{
-			manager.plugin().getLogger().info("ELSE COMMAND CHECK");
+			manager.plugin().getLogger().info("No Bounds Found");
 			return true;
 		}
 

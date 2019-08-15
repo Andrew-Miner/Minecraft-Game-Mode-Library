@@ -248,10 +248,10 @@ public class MGInventoryMenu implements Listener
 			@Override
 			public void run() 
 			{
-				String newStr = animation.updateTitle(inv.getName());
+				//String newStr = animation.updateTitle(inv.getName());
 				
-				if(!inv.getTitle().equals(newStr))
-					setTitle(newStr, true);
+				//if(!inv.getTitle().equals(newStr))
+					//setTitle(newStr, true);
 			}
 			
 		}, 1L, tickDelay);

@@ -10,6 +10,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Team;
 
 import SmokyMiner.MiniGames.Lobby.MGLobby;
+import SmokyMiner.MiniGames.Lobby.Stages.MGGameStage;
 import SmokyMiner.MiniGames.Lobby.Team.MGTeam;
 import SmokyMiner.MiniGames.Lobby.Team.MGTeamManager;
 import SmokyMiner.MiniGames.Lobby.Timer.MGTimerEvent;
@@ -22,11 +23,14 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 	protected Objective matchInfo;
 	protected ArrayList<MGTeamInfo> info;
 	protected ArrayList<Team> teams;
+	protected MGGameStage stage;
 	
-	public MGInGameScoreboard(MGManager manager, MGLobby lobby, int roundLength)
+	public MGInGameScoreboard(MGManager manager, MGLobby lobby, MGGameStage stage, int roundLength)
 	{
 		super(manager, lobby, roundLength, null);
 		super.setTimerEvent(this);
+		
+		this.stage = stage;
 		
 		matchInfo = board.registerNewObjective("inGame" + lobby.getLobbyId().toString().substring(0, 7), "dummy");
 		matchInfo.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -41,11 +45,11 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 	{
 		return matchInfo;
 	}
-	
+
 	@Override
 	public void timerFinished()
 	{
-		lobby.endMatch();
+		lobby.nextStage(true);
 		resetTimer();
 	}
 
@@ -67,7 +71,7 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 	public void addPlayer(Player p)
 	{
 		super.addPlayer(p);
-		MGTeamManager teams = lobby.getTeams();
+		MGTeamManager teams = stage.getTeamManager();
 		MGPlayer pbp = lobby.findPlayer(p.getUniqueId());
 		
 		if(pbp == null)
@@ -87,7 +91,7 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 	@Override
 	public void removePlayer(Player p)
 	{
-		MGTeam team = lobby.getTeams().getTeam(p.getUniqueId());
+		MGTeam team = stage.getTeamManager().getTeam(p.getUniqueId());
 		
 		if(team != null)
 		{
@@ -109,7 +113,7 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 		clearTeams();
 		info.clear();
 		
-		MGTeamManager teams = lobby.getTeams();
+		MGTeamManager teams = stage.getTeamManager();
 		int tCount = teams.getTeamCount();
 		
 		for(int i = 0; i < tCount; i++)
@@ -139,7 +143,7 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 	{
 		clearTeams();
 		
-		MGTeamManager teams = lobby.getTeams();
+		MGTeamManager teams = stage.getTeamManager();
 		int tCount = teams.getTeamCount();
 		
 		for(int i = 0; i < tCount; i++)
@@ -204,7 +208,7 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 	
 	protected void rebuildTeams()
 	{
-		MGTeamManager teams = lobby.getTeams();
+		MGTeamManager teams = stage.getTeamManager();
 		int size = info.size();
 		
 		int longestNameId = getLongestTeamName();
@@ -229,7 +233,7 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 	
 	protected void rebuildPlayerIcons()
 	{
-		MGTeamManager teams = lobby.getTeams();
+		MGTeamManager teams = stage.getTeamManager();
 		int teamCount = teams.getTeamCount();
 		
 		for(int i = 0; i < teamCount; i++)
@@ -246,7 +250,7 @@ public class MGInGameScoreboard extends MGTimerScoreboard implements MGTimerEven
 		String longName = null;
 		int longestNameId = -1;
 		
-		MGTeamManager teams = lobby.getTeams();
+		MGTeamManager teams = stage.getTeamManager();
 		int maxTeams = teams.getTeamCount();
 		
 		for(int i = 0; i < maxTeams; i++)

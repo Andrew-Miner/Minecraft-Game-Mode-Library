@@ -2,14 +2,14 @@ package SmokyMiner.MiniGames.Lobby.Timer;
 
 import org.bukkit.ChatColor;
 
-import SmokyMiner.MiniGames.Lobby.States.MGMatchState;
+import SmokyMiner.MiniGames.Lobby.Stages.MGGameStage;
 
 public class MGTextCountEvent implements MGTimerEvent
 {
-	private final MGMatchState state;
+	private final MGGameStage state;
 	private ChatColor wrapperColor, countColor;
 	
-	public MGTextCountEvent(MGMatchState state)
+	public MGTextCountEvent(MGGameStage state)
 	{
 		this.state = state;
 		
@@ -17,7 +17,7 @@ public class MGTextCountEvent implements MGTimerEvent
 		this.countColor = ChatColor.RED;
 	}
 	
-	public MGTextCountEvent(MGMatchState state, ChatColor wrapperColor, ChatColor countColor)
+	public MGTextCountEvent(MGGameStage state, ChatColor wrapperColor, ChatColor countColor)
 	{
 		this.state = state;
 		
@@ -38,13 +38,13 @@ public class MGTextCountEvent implements MGTimerEvent
 	@Override
 	public void timerFinished() 
 	{
-		state.broadcastMessage(wrapperColor + " ===== " + countColor + "GO!" + wrapperColor + " ===== ");
-		state.beginMatch();
+		state.lobby().broadcastMessage(wrapperColor + " ===== " + countColor + "GO!" + wrapperColor + " ===== ");
+		state.startGame();
 	}
 
 	@Override
 	public void updateTimer(int time) 
 	{
-		state.broadcastMessage(wrapperColor + " ===== " + countColor + " " + time + " " + wrapperColor + " ===== ");
+		state.lobby().broadcastMessage(wrapperColor + " ===== " + countColor + " " + time + " " + wrapperColor + " ===== ");
 	}
 }

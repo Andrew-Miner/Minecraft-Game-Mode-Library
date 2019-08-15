@@ -8,11 +8,11 @@ public class MGBorderedMenu extends MGInventoryMenu
 {
 	private final MGMenuItem borderItem;
 
-	public MGBorderedMenu(JavaPlugin plugin, String name, int maxSlots, int color) 
+	public MGBorderedMenu(JavaPlugin plugin, String name, int maxSlots, Material border) 
 	{
 		super(plugin, name, maxSlots);
 
-		borderItem = new MGMenuItem(plugin, Material.LEGACY_STAINED_GLASS_PANE, color, " ", null, (Sound) null);
+		borderItem = new MGMenuItem(plugin, border, 0, " ", null, (Sound) null);
 		fillBorder(borderItem);
 	}
 

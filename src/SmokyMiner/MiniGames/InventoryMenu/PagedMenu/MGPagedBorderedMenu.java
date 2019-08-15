@@ -12,11 +12,11 @@ public class MGPagedBorderedMenu extends MGPagedMenu
 {
 	private final MGMenuItem borderItem;
 
-	public MGPagedBorderedMenu(JavaPlugin plugin, String name, int maxSlots, int color) 
+	public MGPagedBorderedMenu(JavaPlugin plugin, String name, int maxSlots, Material border) 
 	{
 		super(plugin, name, maxSlots);
 
-		borderItem = new MGMenuItem(plugin, Material.LEGACY_STAINED_GLASS_PANE, color, " ", null, (Sound) null);
+		borderItem = new MGMenuItem(plugin, border, 0, " ", null, (Sound) null);
 		fillBorder(0, borderItem);
 	}
 

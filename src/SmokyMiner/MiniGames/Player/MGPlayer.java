@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import SmokyMiner.MiniGames.Maps.MGBound;
 
@@ -24,6 +25,7 @@ public class MGPlayer
 	private long lastReload;
 	private boolean isReloading;
 	private int shotsFired;
+	private int currency;
 	
 	private boolean isDead;
 	private boolean spectating;
@@ -34,6 +36,8 @@ public class MGPlayer
 	private Location storedLoc;
 	
 	private MGBound selection;
+	
+	private Inventory playerInv;
 	
 	public MGPlayer(UUID id)
 	{
@@ -58,6 +62,8 @@ public class MGPlayer
 		storedLoc = null;	
 		
 		selection = new MGBound();
+		
+		playerInv = Bukkit.createInventory(Bukkit.getPlayer(id), 36);
 	}
 	
 	public MGPlayer(UUID id, int kills, int deaths, int totalScore, int currentScore)
@@ -83,6 +89,8 @@ public class MGPlayer
 		storedLoc = null;	
 		
 		selection = new MGBound();
+		
+		playerInv = Bukkit.createInventory(Bukkit.getPlayer(id), 36);
 	}
 	
 	@Override
@@ -225,6 +233,8 @@ public class MGPlayer
 	public void spawnPregame(Location loc, MGSpawnKit kit)
 	{
 		Player p = Bukkit.getServer().getPlayer(id);
+		p.setHealth(20);
+		p.setFoodLevel(100);
 		p.teleport(loc);
 		p.getInventory().clear();
 		p.setGameMode(GameMode.CREATIVE);
@@ -236,6 +246,8 @@ public class MGPlayer
 	public void spawnSpectating(Location loc, MGSpawnKit kit)
 	{
 		Player p = Bukkit.getServer().getPlayer(id);
+		p.setHealth(20);
+		p.setFoodLevel(100);
 		p.teleport(loc);
 		p.getInventory().clear();
 		p.setGameMode(GameMode.SPECTATOR);
@@ -247,6 +259,8 @@ public class MGPlayer
 	public void spawnInGame(Location loc, MGSpawnKit kit)
 	{
 		Player p = Bukkit.getServer().getPlayer(id);
+		p.setHealth(20);
+		p.setFoodLevel(100);
 		p.teleport(loc);
 		p.getInventory().clear();
 		p.setGameMode(GameMode.ADVENTURE);
@@ -293,6 +307,21 @@ public class MGPlayer
 	public void addLoss() 
 	{
 		this.losses++;
+	}
+	
+	public int getCurrency()
+	{
+		return currency;
+	}
+	
+	public void setCurrency(int currency)
+	{
+		this.currency = currency;
+	}
+	
+	public void addCurrency(int amount)
+	{
+		currency += amount;
 	}
 	
 	public void setSelection(MGBound selection)
@@ -361,6 +390,17 @@ public class MGPlayer
 		return shotsFired;
 	}
 
+	public Inventory getInventory()
+	{
+		return playerInv;
+	}
+
+	public void setInventory(Inventory inventory)
+	{
+		if(inventory != null)
+			playerInv = inventory;
+	}
+	
 	public void resetBow() 
 	{
 		setShotsFired(0);

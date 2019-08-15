@@ -9,20 +9,22 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import SmokyMiner.MiniGames.Commands.MGCommandEffect;
 import SmokyMiner.MiniGames.Commands.MGCommandInfo;
 import SmokyMiner.MiniGames.Commands.MGCommandMap;
-import SmokyMiner.MiniGames.Lobby.MGLobbyManager;
+import SmokyMiner.MiniGames.Lobby.MGMatchMaker;
 import SmokyMiner.Minigame.Main.MGManager;
 
 public class MGCommandHandler implements CommandExecutor, TabCompleter
 {
-	private MGLobbyManager manager;
+	private MGMatchMaker manager;
 	private MGManager mgManager;
 	private MGCommandParser parser;
 	private MGCommandInfo infoCmd;
 	private MGCommandMap arenaCmd;
+	private MGCommandEffect effectCmd;
 	
-	public MGCommandHandler(MGManager mgManager, MGLobbyManager manager)
+	public MGCommandHandler(MGManager mgManager, MGMatchMaker manager)
 	{
 		this.manager = manager;
 		this.mgManager = mgManager;
@@ -30,6 +32,7 @@ public class MGCommandHandler implements CommandExecutor, TabCompleter
 		
 		infoCmd = new MGCommandInfo(mgManager);
 		arenaCmd = new MGCommandMap(mgManager, manager);
+		effectCmd = new MGCommandEffect(mgManager);
 	}
 	
     @Override
@@ -60,6 +63,8 @@ public class MGCommandHandler implements CommandExecutor, TabCompleter
     		break;
     	case ARENA:
     		return arenaCmd.onCommand(pbCommand);
+    	case EFFECT:
+    		return effectCmd.onCommand(pbCommand);
 		default:
 			return false;
     	}

@@ -7,12 +7,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import SmokyMiner.MiniGames.Lobby.MGLobby;
-import SmokyMiner.MiniGames.Lobby.MGLobbyManager;
+import SmokyMiner.MiniGames.Lobby.MGMatchMaker;
 import SmokyMiner.Minigame.Main.MGManager;
 
 public class MGCommandAllChat implements CommandExecutor
 {
-	private MGLobbyManager manager;
+	private MGMatchMaker manager;
 	private MGManager mgManager;
 	
 	public MGCommandAllChat()
@@ -21,7 +21,7 @@ public class MGCommandAllChat implements CommandExecutor
 		mgManager = null;
 	}
 	
-	public MGCommandAllChat(MGManager mgManager, MGLobbyManager manager)
+	public MGCommandAllChat(MGManager mgManager, MGMatchMaker manager)
 	{
 		this.manager = manager;
 		this.mgManager = mgManager;
@@ -59,8 +59,8 @@ public class MGCommandAllChat implements CommandExecutor
     			else
     				lobby.sendChatMessege(p.getUniqueId(), msg, true);
     			
-    			if(msg.equalsIgnoreCase("start "))
-    				lobby.startMatch();
+    			if(msg.equalsIgnoreCase("start"))
+    				lobby.nextStage();
     			
     			return true;
     		}

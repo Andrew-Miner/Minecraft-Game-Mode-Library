@@ -16,7 +16,7 @@ public class MGLobbyLeaveEvent extends EventObject
 		this.player = player;
 	}
 	
-	public MGPlayer getPBPlayer()
+	public MGPlayer getMGPlayer()
 	{
 		return player;
 	}

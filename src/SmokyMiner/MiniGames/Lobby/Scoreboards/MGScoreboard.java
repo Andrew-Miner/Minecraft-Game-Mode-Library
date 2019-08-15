@@ -56,6 +56,11 @@ public class MGScoreboard
 		return board;
 	}
 	
+	public void resetScoreboard()
+	{
+		board = Bukkit.getScoreboardManager().getNewScoreboard();
+	}
+	
 	public void removePlayer(Player p)
 	{
 		board.resetScores(p.getName());

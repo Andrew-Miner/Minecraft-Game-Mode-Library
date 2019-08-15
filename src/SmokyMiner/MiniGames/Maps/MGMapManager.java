@@ -1,13 +1,23 @@
 package SmokyMiner.MiniGames.Maps;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 
+import SmokyMiner.MiniGames.Player.MGPlayer;
 import SmokyMiner.Minigame.Main.MGManager;
 
-public class MGMapManager 
+public class MGMapManager implements Listener
 {
 	private ArrayList<MGMapMetadata> maps;
 	private ArrayList<String> activeRotation;
@@ -21,6 +31,8 @@ public class MGMapManager
 		maps = new ArrayList<MGMapMetadata>();
 		activeRotation = new ArrayList<String>();
 		this.mapRegistry = mapRegistry;
+		
+    manager.plugin().getServer().getPluginManager().registerEvents(this, manager.plugin());
 	}
 	
 	public MGMapManager(MGManager manager, FileConfiguration mapRegistry, ArrayList<MGMapMetadata> maps)
@@ -29,6 +41,8 @@ public class MGMapManager
 		this.maps = maps;
 		activeRotation = new ArrayList<String>();
 		this.mapRegistry = mapRegistry;
+    
+    manager.plugin().getServer().getPluginManager().registerEvents(this, manager.plugin());
 	}
 	
 	public MGMapManager(MGManager manager, FileConfiguration mapRegistry, ArrayList<MGMapMetadata> maps, ArrayList<String> activeRotation)
@@ -37,6 +51,8 @@ public class MGMapManager
 		this.maps = maps;
 		this.activeRotation = activeRotation;
 		this.mapRegistry = mapRegistry;
+    
+    manager.plugin().getServer().getPluginManager().registerEvents(this, manager.plugin());
 	}
 	
 	public int getMapCount()
@@ -320,4 +336,58 @@ public class MGMapManager
 		
 		return false;
 	}
+	
+	// Make Map Selections
+  @EventHandler
+  public void playerInteractEvent(PlayerInteractEvent e)
+  {
+    Player p = e.getPlayer();
+    
+    if(p.getInventory().getItemInMainHand().getType().equals(Material.BONE))
+    {
+      DecimalFormat df = new DecimalFormat("#.#");
+      Action action = e.getAction();
+      
+      MGPlayer player = manager.getPlayerManager().getMGPlayer(p.getUniqueId());
+      
+      if(player == null)
+        return;
+      
+      Location loc = null;
+      MGBound bound = player.getSelection();
+      
+      switch(action)
+      {
+      case LEFT_CLICK_BLOCK:
+        loc = e.getClickedBlock().getLocation();
+        
+        if(bound.loc1 != null && bound.loc1.equals(loc))
+        {
+          e.setCancelled(true);
+          return;
+        }
+        
+        bound.loc1 = loc;
+        p.sendMessage(ChatColor.GOLD + MGManager.logPrefix + ChatColor.GRAY + ChatColor.ITALIC + " Selection 1 Set:  {" + df.format(bound.loc1.getX()) + " " + df.format(bound.loc1.getY()) + " " + df.format(bound.loc1.getZ()) + "}");
+        break;
+      case RIGHT_CLICK_BLOCK:
+        loc = e.getClickedBlock().getLocation();
+        
+        if(bound.loc2 != null && bound.loc2.equals(loc))
+        {
+          e.setCancelled(true);
+          return;
+        }
+        
+        bound.loc2 = loc;
+        p.sendMessage(ChatColor.GOLD + MGManager.logPrefix + ChatColor.GRAY + ChatColor.ITALIC + " Selection 2 Set:  {" + df.format(bound.loc2.getX()) + " " + df.format(bound.loc2.getY()) + " " + df.format(bound.loc2.getZ()) + "}");
+        break;
+      default:
+        return;
+      }
+      
+      player.setSelection(bound);
+      e.setCancelled(true);
+    }
+  }
 }

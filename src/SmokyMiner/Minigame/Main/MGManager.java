@@ -6,15 +6,18 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.bukkit.Material;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import SmokyMiner.Examples.Paintball.EventPasser;
 import SmokyMiner.MiniGames.Commands.MGCommandAllChat;
 import SmokyMiner.MiniGames.Commands.MGCommandJoin;
 import SmokyMiner.MiniGames.Commands.CommandHandler.MGCommandHandler;
-import SmokyMiner.MiniGames.Lobby.MGLobbyManager;
+import SmokyMiner.MiniGames.InventoryMenu.MGMenuItem;
+import SmokyMiner.MiniGames.Items.MGInventoryItem;
+import SmokyMiner.MiniGames.Items.ItemShop.MGItemShop;
+import SmokyMiner.MiniGames.Lobby.MGMatchMaker;
 import SmokyMiner.MiniGames.Maps.MGMapManager;
 import SmokyMiner.MiniGames.Maps.MGMapMetadata;
 import SmokyMiner.MiniGames.Maps.MGMapMethods;
@@ -35,9 +38,11 @@ public class MGManager
 	
 	private JavaPlugin plugin;
 
-	private MGCommandHandler cmdHandler;
 	private MGPlayerManager playerManager;
-	private MGLobbyManager lobbyManager;
+	private MGCommandHandler cmdHandler;
+	private MGMatchMaker matchMaker;
+	private MGItemShop itemShop;
+	private MGInventoryItem invItem;
 	private MGMapManager maps;
 	
 	public MGManager(JavaPlugin plugin, String cmdPrefix)
@@ -48,13 +53,15 @@ public class MGManager
 		
 		playerManager = new MGPlayerManager(this);
 		plugin.getServer().getPluginManager().registerEvents(playerManager, plugin);
+
+		itemShop = new MGItemShop(plugin);
+		invItem = new MGInventoryItem(this, Material.CHEST);
+		matchMaker = new MGMatchMaker(this, 1, MGMapMethods.loadSpawnMap(this));
 		
-		lobbyManager = new MGLobbyManager(this);
+		plugin.getCommand("join").setExecutor(new MGCommandJoin(this, matchMaker));
+		plugin.getCommand("all").setExecutor(new MGCommandAllChat(this, matchMaker));
 		
-		plugin.getCommand("join").setExecutor(new MGCommandJoin(this, lobbyManager));
-		plugin.getCommand("all").setExecutor(new MGCommandAllChat(this, lobbyManager));
-		
-		cmdHandler = new MGCommandHandler(this, lobbyManager);
+		cmdHandler = new MGCommandHandler(this, matchMaker);
 		plugin.getCommand("pb").setExecutor(cmdHandler);
 		plugin.getCommand("pb").setTabCompleter(cmdHandler);
 	}
@@ -88,7 +95,7 @@ public class MGManager
 	
 	public void close()
 	{
-		playerManager.updatePlayersSync();
+		playerManager.updatePlayersSync(true);
 		playerManager.close();
 	}
 	
@@ -181,9 +188,9 @@ public class MGManager
 		return playerManager;
 	}
 	
-	public MGLobbyManager getLobbyManager()
+	public MGMatchMaker getMatchMaker()
 	{
-		return lobbyManager;
+		return matchMaker;
 	}
 	
 	public MGMapManager getMaps()
@@ -194,6 +201,11 @@ public class MGManager
 	public JavaPlugin plugin()
 	{
 		return plugin;
+	}
+	
+	public MGItemShop getItemShop()
+	{
+		return itemShop;
 	}
 	
 	public void addMapConfig(File mapFile, FileConfiguration mapConfig)
@@ -261,5 +273,10 @@ public class MGManager
 		}
 		
 		return metadata;
+	}
+
+	public MGInventoryItem getInventoryBlock()
+	{
+		return invItem;
 	}
 }

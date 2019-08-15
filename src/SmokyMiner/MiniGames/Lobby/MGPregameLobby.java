@@ -17,7 +17,7 @@ import SmokyMiner.MiniGames.Maps.MGMapMethods;
 import SmokyMiner.MiniGames.Player.MGPlayer;
 import SmokyMiner.Minigame.Main.MGManager;
 
-public class MGSpawnLobby 
+public class MGPregameLobby 
 {
 	private ArrayList<MGPlayer> players;
 	private final int maxPlayers;
@@ -25,19 +25,18 @@ public class MGSpawnLobby
 	private MGMapMetadata spawnMap;
 	private final MGManager manager;
 	
-	public MGSpawnLobby(MGManager manager, MGMapMetadata spawnMap)
+	public MGPregameLobby(MGManager manager, MGMapMetadata map)
 	{
 		this.manager = manager;
 		players = new ArrayList<MGPlayer>();
 		maxPlayers = this.manager.plugin().getServer().getMaxPlayers();
-		this.spawnLoc = spawnMap.getMapCenter();
-		this.spawnMap = spawnMap;
+		this.spawnMap = map;
+		this.spawnLoc = map.getMapCenter();
 		spawnLoc.setWorld(Bukkit.getWorld(spawnMap.getWorldName()));
 		
 		this.manager.plugin().getLogger().info("------------------");
 		this.manager.plugin().getLogger().info("Spawn Bounds: ");
 		MGMapMethods.printBounds(this.manager.plugin(), spawnMap.getDefaultBounds());
-		
 	}
 	
 	public boolean addPlayer(MGPlayer player)
@@ -52,6 +51,13 @@ public class MGSpawnLobby
 		
 		return true;
 	}
+  
+  public boolean removePlayer(MGPlayer player)
+  {
+    if(removePlayer(player.getID()) == null)
+      return false;
+    return true;
+  }
 	
 	public MGPlayer removePlayer(UUID player)
 	{

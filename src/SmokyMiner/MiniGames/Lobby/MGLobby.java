@@ -6,98 +6,161 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowball;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
-import SmokyMiner.MiniGames.Maps.MGMapMetadata;
-import SmokyMiner.MiniGames.Player.MGPlayer;
-import SmokyMiner.MiniGames.Player.MGSpawnKit;
-import SmokyMiner.Minigame.Main.MGManager;
+import SmokyMiner.MiniGames.Items.MGExitItem;
+import SmokyMiner.MiniGames.Items.ItemShop.MGItemShop;
 import SmokyMiner.MiniGames.Lobby.Events.MGLobbyJoinEvent;
 import SmokyMiner.MiniGames.Lobby.Events.MGLobbyLeaveEvent;
 import SmokyMiner.MiniGames.Lobby.Events.MGLobbyListener;
-import SmokyMiner.MiniGames.Lobby.States.MGMatchState;
-import SmokyMiner.MiniGames.Lobby.States.MGPregameState;
-import SmokyMiner.MiniGames.Lobby.States.MGRoundBasedElimination;
-import SmokyMiner.MiniGames.Lobby.Team.MGTeamManager;
+import SmokyMiner.MiniGames.Lobby.Events.MGLobbyStageEndEvent;
+import SmokyMiner.MiniGames.Lobby.Events.MGLobbyStageStartEvent;
+import SmokyMiner.MiniGames.Lobby.Stages.MGLobbyStage;
+import SmokyMiner.MiniGames.Player.MGPlayer;
+import SmokyMiner.Minigame.Main.MGManager;
 
-public class MGLobby implements Comparable<MGLobby>
+public class MGLobby implements Comparable<MGLobby>, Listener
 {
+	// TODO: When the game ends because players left during a match, the pregame board doesnt get cleared
+	// TODO: when a player leaves the match with the exit item during in game, big errors
 	private static int lobbyCount = 0;
 	private static int lobbyNumberRange = 0;
 	private static TreeSet<Integer> availableNumbers = new TreeSet<Integer>();
 
+	@SuppressWarnings("unused")
 	private final MGManager manager;
-	private ArrayList<MGLobbyListener> listeners = new ArrayList<MGLobbyListener>();
-
-	private ArrayList<MGPlayer> players;
-
-	public static MGSpawnKit defSpectKit;
-	public static MGSpawnKit defInGameKit;
-	public static MGSpawnKit defPregameKit;
-
-	private int maxPlayerCount;
-	private int roundTickTime;
-	int maxRounds;
-	private int minPlayers;
-
-	private boolean inGame, inCount;
-
+	
 	private UUID lobbyId;
 	private int lobbyNumber;
 	
 	private boolean chatLock;
 	
-	private MGMatchState matchState;
-	private MGPregameState pregameState;
+	private int minPlayers;
+	private int maxPlayers;
+	
+	private int curStage;
+	private ArrayList<MGLobbyStage> stages;
 	
 	private MGExitItem exitItem;
-
-	public MGLobby(MGManager manager, MGLobbyListener listener, int maxPlayerCount, int roundTickTime, int maxRounds, int minimumPlayers, MGMapMetadata pregameMap)
+	
+	private ArrayList<MGPlayer> players;
+	private ArrayList<MGLobbyListener> listeners;
+	
+	public MGLobby(MGManager manager, int maxPlayers, int minPlayers)
 	{
 		this.manager = manager;
+		this.maxPlayers = maxPlayers;
+		this.minPlayers = minPlayers;
+		
+		stages = new ArrayList<MGLobbyStage>();
+		
+		curStage = 0;
+		chatLock = false;
+		
+		exitItem = new MGExitItem(manager.plugin(), this);
+		exitItem.setCanDrop(false);
+		
 		players = new ArrayList<MGPlayer>();
-
-		this.maxPlayerCount = maxPlayerCount;
-		this.roundTickTime = roundTickTime;
-		this.maxRounds = maxRounds;
-		setMinPlayers(minimumPlayers);
-
-		inGame = false;
-		setInCount(false);
-
+		listeners = new ArrayList<MGLobbyListener>();
+		
 		lobbyId = UUID.randomUUID();
 		lobbyCount++;
+		
+		lobbyNumber = nextLobbyNumber();
+		
+		manager.plugin().getServer().getPluginManager().registerEvents(this, manager.plugin());
+	}
+	
+	public MGLobby(MGManager manager, int maxPlayers, int minPlayers, MGLobbyStage stage)
+	{
+		this.manager = manager;
+		this.maxPlayers = maxPlayers;
+		this.minPlayers = minPlayers;
+		
+		stages = new ArrayList<MGLobbyStage>();
+		addStage(stage);
+		
+		curStage = 0;
+		chatLock = false;
+		
+		exitItem = new MGExitItem(manager.plugin(), this);
+		exitItem.setCanDrop(false);
+		
+		players = new ArrayList<MGPlayer>();
+		listeners = new ArrayList<MGLobbyListener>();
+		
+		lobbyId = UUID.randomUUID();
+		lobbyCount++;
+		
+		lobbyNumber = nextLobbyNumber();
+		
+		manager.plugin().getServer().getPluginManager().registerEvents(this, manager.plugin());
+	}
+	
+	@SuppressWarnings("unchecked")
+	public MGLobby(MGManager manager, int maxPlayers, int minPlayers, ArrayList<MGLobbyStage> stages)
+	{
+		this.manager = manager;
+		this.maxPlayers = maxPlayers;
+		this.minPlayers = minPlayers;
+		
+		this.stages = (ArrayList<MGLobbyStage>) stages.clone();
+		
+		curStage = 0;
+		chatLock = false;
+		
+		exitItem = new MGExitItem(manager.plugin(), this);
+		exitItem.setCanDrop(false);
+		
+		players = new ArrayList<MGPlayer>();
+		listeners = new ArrayList<MGLobbyListener>();
+		
+		lobbyId = UUID.randomUUID();
+		
+		lobbyNumber = nextLobbyNumber();
+		
+		manager.plugin().getServer().getPluginManager().registerEvents(this, manager.plugin());
+	}
+	
+	
+
+	@SuppressWarnings("unchecked")
+	public ArrayList<MGPlayer> close()
+	{
+		endStage();
+		
+		for(MGLobbyStage stage : stages)
+			stage.close();
+		
+		HandlerList.unregisterAll(this);
+		freeLobbyNumber(lobbyNumber);
+		
+		return (ArrayList<MGPlayer>) players.clone();
+	}
+	
+	// Static Methods =======================================================
+	
+	private static int nextLobbyNumber()
+	{
+		lobbyCount++;					// THIS SHOULDNT BE HERE!!!!
 		
 		if(availableNumbers.isEmpty())
 		{
 			lobbyNumberRange++;
-			lobbyNumber = lobbyNumberRange;
+			return lobbyNumberRange;
 		}
 		else
-			lobbyNumber = availableNumbers.pollFirst();
-		
-		chatLock = false;
-		
-		exitItem = new MGExitItem(manager.plugin(), this);
-		
-		pregameState = new MGPregameState(manager, this, pregameMap);
-		matchState = new MGRoundBasedElimination(manager, this, manager.getMaps().getRandomMap(true), 3);
-		
-		pregameState.startState();
+			return availableNumbers.pollFirst();
 	}
-
-	public ArrayList<MGPlayer> close()
+	
+	private static void freeLobbyNumber(int lobbyNumber)
 	{
 		if(lobbyNumberRange != lobbyNumber)
 			availableNumbers.add(lobbyNumber);
@@ -111,25 +174,13 @@ public class MGLobby implements Comparable<MGLobby>
 			lobbyNumberRange = 0;
 			availableNumbers.clear();
 		}
-		
-		if(inGame)
-		{
-			matchState.endState();
-			pregameState.startState();
-		}
-		
-		pregameState.endState();
-
-		ArrayList<MGPlayer> playerBU = (ArrayList<MGPlayer>) players.clone();
-		
-		for(MGPlayer player : playerBU)
-		{
-			removePlayer(player.getID());
-		}
-		
-		return playerBU;
 	}
-
+	
+	public static int lobbyCount()
+	{
+		return lobbyCount;
+	}
+	
 	
 	// Object Overrides =====================================================
 
@@ -138,14 +189,14 @@ public class MGLobby implements Comparable<MGLobby>
 	{
 		return lobbyId.hashCode();
 	}
-	
+		
 	@Override
 	public boolean equals(Object obj)
 	{
 		if(obj instanceof MGLobby)
 		{
 			MGLobby other = (MGLobby) obj;
-			
+				
 			if(other.lobbyId.equals(lobbyId))
 				return true;
 		}
@@ -156,7 +207,7 @@ public class MGLobby implements Comparable<MGLobby>
 		}
 		else
 			return super.equals(obj);
-		
+			
 		return false;
 	}
 
@@ -166,15 +217,61 @@ public class MGLobby implements Comparable<MGLobby>
 		return Integer.compare(playerCount(), other.playerCount());
 	}
 	
-	public MGPlayer findPlayer(UUID player)
+	
+	// MATCH EVENTS ==========================================================
+
+	public boolean addPlayer(MGPlayer player)
 	{
-		int index = players.indexOf(new MGPlayer(player));
-		
-		if(index == -1)
-			return null;
-		else
-			return players.get(index);
+		if(players.size() >= maxPlayers || players.contains(player))
+			return false;
+
+		players.add(player);
+    
+    Player p = Bukkit.getPlayer(player.getID());
+    exitItem.giveBlock(p);
+    
+		fireJoinEvent(player);
+		return true;
 	}
+  
+  public boolean removePlayer(MGPlayer player)
+  {
+    if(removePlayer(player.getID()) == null)
+      return false;
+    return true;
+  }
+
+	public MGPlayer removePlayer(UUID player)
+	{
+		MGPlayer pb = findPlayer(player);
+			
+		if(pb != null && players.remove(pb))
+		{
+      Player p = Bukkit.getPlayer(player);
+      exitItem.removeBlock(p);
+      
+      fireLeaveEvent(pb);
+			return pb;
+		}
+			
+		return null;
+	}
+	
+	
+	// MINECRAFT EVENTS ================================================================
+	
+	@EventHandler
+	public void playerLeaveEvent(PlayerQuitEvent e)
+	{
+		removePlayer(e.getPlayer().getUniqueId());
+	}
+	
+	@EventHandler
+	public void playerKickEvent(PlayerKickEvent e)
+	{
+		removePlayer(e.getPlayer().getUniqueId());
+	}
+	
 
 	// UTILITY FUNCTIONS =====================================================
 
@@ -183,10 +280,7 @@ public class MGLobby implements Comparable<MGLobby>
 		if(isChatLocked())
 			return;
 		
-		if(inGame)
-			matchState.sendChatMessege(player, msg, allChat);
-		else
-			pregameState.sendChatMessege(player, msg, allChat);
+		stages.get(curStage).sendChatMessege(player, msg, allChat);
 	}
 
 	public void broadcastMessage(String msg)
@@ -208,207 +302,164 @@ public class MGLobby implements Comparable<MGLobby>
 			broadcastMessage("");
 	}
 	
-	// MATCH EVENTS ==========================================================
-
-	public boolean addPlayer(MGPlayer player)
+	public MGPlayer findPlayer(UUID player)
 	{
-		if(players.size() >= getMaxPlayerCount() || players.contains(player))
-			return false;
-
-		players.add(player);
+		int index = players.indexOf(new MGPlayer(player));
 		
-		if(inGame)
-			matchState.addPlayer(player);
+		if(index == -1)
+			return null;
 		else
-			pregameState.addPlayer(player);
+			return players.get(index);
+	}
+	
+	public void playSound(Location location, Sound sound, float volume, float pitch) 
+	{
+		for(MGPlayer p : players)
+		{
+			Bukkit.getPlayer(p.getID()).playSound(location, sound, volume, pitch);
+		}
+	}
+	
+	
+	// Stage Functionality =====================================================
 
-		fireJoinEvent(player);
-		
+	public boolean addStage(MGLobbyStage stage)
+	{
+		if(stages.contains(stage))
+			return false;
+		stages.add(stage);
 		return true;
 	}
-
-	public MGPlayer removePlayer(UUID player)
+	
+	public MGLobbyStage removeStage(int index)
 	{
-		MGPlayer pb = findPlayer(player);
-		
-		if(pb != null && players.remove(pb))
-		{
-			broadcastMessage(ChatColor.YELLOW + Bukkit.getPlayer(pb.getID()).getName() + " left the lobby!");
+		if(stages.get(index).isActive())
+			throw new IllegalStateException("cannot remove an active stage");
 			
-			pregameState.removePlayer(pb);
+		if(index <= curStage && --curStage < 0)
+			curStage = 0;
 			
-			if(inGame)
-				matchState.removePlayer(pb);
-			
-			Player p = Bukkit.getPlayer(player);
-
-			try
-			{
-				if(p != null)
-				{
-					p.getInventory().clear();
-					p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-				}
-			} 
-			catch(IllegalStateException e)
-			{
-				manager.plugin().getLogger().warning(e.toString());
-			}
-			
-			fireLeaveEvent(pb);
-			
-			return pb;
-		}
-		
-		return null;
+		return stages.remove(index);
 	}
-
-	public void startMatch()
+	
+	public void nextStage()
 	{
-		if(inGame)
-			endMatch();
-		
-		pregameState.endState();
-		firePregameEndEvent();
-		
-		inGame = true;
-		matchState.startState();
-		fireMatchStartEvent();
+		nextStage(true);
 	}
-
-	public void endMatch()
+	
+	public void nextStage(boolean startStage)
 	{
-		if(!inGame)
-			return;
+		if(stages.get(curStage).isActive())
+			endStage();
 		
-		inGame = false;
+		if(++curStage >= stages.size())
+				curStage = 0;
 		
-		matchState.endState();
-		fireMatchEndEvent();
-		
-		pregameState.startState();
-		firePregameStartEvent();
+		if(startStage)
+			startStage();
 	}
+	
+	public void prevStage()
+	{
+		prevStage(true);
+	}
+	
+	public void prevStage(boolean startStage)
+	{
+		if(stages.get(curStage).isActive())
+			endStage();
+		
+		if(--curStage < 0)
+			curStage = stages.size() - 1;
+		
+		if(startStage)
+			startStage();
+	}
+	
+	public void setStage(int index)
+	{	
+		if(curStage >= stages.size() || curStage < -1)
+			throw new IndexOutOfBoundsException("stage index out of bounds");
+		if(stages.get(curStage).isActive())
+			throw new IllegalStateException("cannot change an active stage");
+		curStage = index;
+	}
+	
+	public void endStage()
+	{
+		if(curStage >= stages.size())
+			throw new IndexOutOfBoundsException("current stage index is too large");
+		if(!stages.get(curStage).isActive())
+			throw new IllegalStateException("current stage already inactive");
+		
+		stages.get(curStage).endStage();
+		fireStageEndEvent();
+	}
+	
+	public void startStage()
+	{
+		if(curStage >= stages.size())
+			throw new IndexOutOfBoundsException("current stage index is too large");
+		if(stages.get(curStage).isActive())
+			throw new IllegalStateException("current stage already active");
+		
+		stages.get(curStage).startStage();
+		fireStageStartEvent();
+	}
+	
 	
 	// LOBBY EVENT UTILITY FUNCTIONS ===================================================
+	
 	public void registerListener(MGLobbyListener listener)
 	{
-		listeners.add(listener);
+		if(listener != null)
+			listeners.add(listener);
 	}
-	
+		
 	public void unregisterListener(MGLobbyListener listener)
 	{
-		listeners.remove(listener);
+		if(listener != null)
+			listeners.remove(listener);
 	}
 	
-	private void fireMatchEndEvent()
+	private void fireStageEndEvent()
 	{
+		MGLobbyStageEndEvent event = new MGLobbyStageEndEvent(this, stages.get(curStage));
+		
 		Iterator<MGLobbyListener> it = listeners.iterator();
-		while(it.hasNext()) { ((MGLobbyListener) it.next()).matchEndEvent(this); }
+		while(it.hasNext()) { ((MGLobbyListener) it.next()).stageEndEvent(event); }
 	}
-	
-	private void fireMatchStartEvent()
+		
+	private void fireStageStartEvent()
 	{
+		MGLobbyStageStartEvent event = new MGLobbyStageStartEvent(this, stages.get(curStage));
+		
 		Iterator<MGLobbyListener> it = listeners.iterator();
-		while(it.hasNext()) { ((MGLobbyListener) it.next()).matchStartEvent(this); }
+		while(it.hasNext()) { ((MGLobbyListener) it.next()).stageStartEvent(event); }
 	}
-	
-	private void firePregameEndEvent()
-	{
-		Iterator<MGLobbyListener> it = listeners.iterator();
-		while(it.hasNext()) { ((MGLobbyListener) it.next()).pregameEndEvent(this); }
-	}
-	
-	private void firePregameStartEvent()
-	{
-		Iterator<MGLobbyListener> it = listeners.iterator();
-		while(it.hasNext()) { ((MGLobbyListener) it.next()).pregameStartEvent(this); }
-	}
-	
+		
 	private void fireLeaveEvent(MGPlayer player)
 	{
 		MGLobbyLeaveEvent event = new MGLobbyLeaveEvent(this, player);
-		
+			
 		Iterator<MGLobbyListener> it = listeners.iterator();
 		while(it.hasNext()) { ((MGLobbyListener) it.next()).playerLeaveEvent(event); }
 	}
-	
+		
 	private void fireJoinEvent(MGPlayer player)
 	{
 		MGLobbyJoinEvent event = new MGLobbyJoinEvent(this, player);
-		
+			
 		Iterator<MGLobbyListener> it = listeners.iterator();
 		while(it.hasNext()) { ((MGLobbyListener) it.next()).playerJoinedEvent(event); }
 	}
-	// MINECRAFT EVENTS ================================================================
-
-	public void playerChatEvent(AsyncPlayerChatEvent e)
-	{
-		MGPlayer player = findPlayer(e.getPlayer().getUniqueId());
-		
-		if(player == null)
-			return;
-		
-		if(isChatLocked())
-		{
-			e.getRecipients().clear();
-			return;
-		}
-		
-		if(inGame)
-			matchState.playerChatEvent(e);
-		else
-			pregameState.playerChatEvent(e);
-	}
-
-	public void playerMoved(PlayerMoveEvent e)
-	{
-		if(findPlayer(e.getPlayer().getUniqueId()) == null)
-			return;
-		
-		if(!inGame)
-			pregameState.playerMoveEvent(e);
-		else
-			matchState.playerMoved(e);
-	}
 	
-	public void entityDamagEntityEvent(EntityDamageByEntityEvent e)
-	{
-		Entity ent = e.getEntity();
-		
-		if(ent instanceof Player)
-		{
-			if(findPlayer(ent.getUniqueId()) == null)
-				return;
-			
-			if(inGame)
-				matchState.entityDamageEntity(e);
-			else
-				pregameState.entityDamageEntity(e);
-		}
-	}
-
-	public void projectileHitEvent(ProjectileHitEvent e)
-	{
-		Entity ent = e.getEntity();
-		
-		if(ent instanceof Snowball)
-		{
-			ProjectileSource source = ((Snowball) ent).getShooter();
-			
-			if(source instanceof Player)
-			{
-				Player p = (Player) source;
-				
-				MGPlayer pbp = findPlayer(p.getUniqueId());
-				
-				if(inGame)
-					matchState.projectileHitEvent(e);
-			}
-		}
-	}
 	
 	// GETTERS AND SETTERS ===================================================
+	public boolean stageActive()
+	{
+		return stages.get(curStage).isActive();
+	}
 	
 	public int getMinPlayers() 
 	{
@@ -425,19 +476,9 @@ public class MGLobby implements Comparable<MGLobby>
 		return lobbyId;
 	}
 
-	public int getMaxPlayerCount() 
+	public int getMaxPlayers() 
 	{
-		return maxPlayerCount;
-	}
-	
-	public boolean isInCount() 
-	{
-		return inCount;
-	}
-
-	public void setInCount(boolean inCount) 
-	{
-		this.inCount = inCount;
+		return maxPlayers;
 	}
 
 	public boolean isChatLocked() 
@@ -449,35 +490,27 @@ public class MGLobby implements Comparable<MGLobby>
 	{
 		chatLock = locked;
 	}
-
-	public int getRoundTickTime() 
-	{
-		return roundTickTime;
-	}
 	
+	@SuppressWarnings("unchecked")
 	public ArrayList<MGPlayer> getPlayers() 
 	{ 
-		return players; 
-	}
-	
-	public boolean inGame() 
-	{ 
-		return inGame; 
-	}
-	
-	public MGTeamManager getTeams()
-	{
-		return matchState.getTeamManager();
+		return (ArrayList<MGPlayer>) players.clone(); 
 	}
 
-	public MGMatchState getMatchState()
+	public MGLobbyStage getCurrentStage()
 	{
-		return matchState;
+		return stages.get(curStage);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public ArrayList<MGLobbyStage> getStages()
+	{
+		return (ArrayList<MGLobbyStage>) stages.clone();
 	}
 	
 	public boolean isFull()
 	{
-		return maxPlayerCount == players.size();
+		return maxPlayers == players.size();
 	}
 	
 	public int playerCount()
@@ -485,30 +518,11 @@ public class MGLobby implements Comparable<MGLobby>
 		return players.size();
 	}
 
-	public void playSound(Location location, Sound sound, float volume, float pitch) 
-	{
-		for(MGPlayer p : players)
-		{
-			Bukkit.getPlayer(p.getID()).playSound(location, sound, volume, pitch);
-		}
-		
-	}
-
-	public void playerInteractEvent(PlayerInteractEvent e) 
-	{
-		matchState.playerInteractEvent(e);
-	}
-
 	public int getLobbyNumber() 
 	{
 		return lobbyNumber;
 	}
 	
-	public static int lobbyCount()
-	{
-		return lobbyCount;
-	}
-
 	public MGExitItem getExitItem() 
 	{
 		return exitItem;

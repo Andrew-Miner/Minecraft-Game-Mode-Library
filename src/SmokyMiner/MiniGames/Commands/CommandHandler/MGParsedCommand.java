@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import SmokyMiner.MiniGames.Commands.CommandHandler.MGCommandParser.command_info;
@@ -92,6 +91,7 @@ public class MGParsedCommand
 		return true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public ArrayList<String> getArgs(String identifier)
 	{
 		if(parseTree.containsKey(identifier))

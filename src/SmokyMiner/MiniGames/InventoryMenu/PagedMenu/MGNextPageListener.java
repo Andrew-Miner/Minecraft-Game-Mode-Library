@@ -1,6 +1,7 @@
 package SmokyMiner.MiniGames.InventoryMenu.PagedMenu;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 import SmokyMiner.MiniGames.InventoryMenu.MGItemClickEvent;
 import SmokyMiner.MiniGames.InventoryMenu.MGItemListener;
@@ -21,5 +22,12 @@ public class MGNextPageListener implements MGItemListener
 		}
 		else
 			throw new IllegalStateException("NextPageListener not in PagedMenu");
+	}
+
+	@Override
+	public void onItemInteraction(PlayerInteractEvent e)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

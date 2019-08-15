@@ -7,12 +7,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import SmokyMiner.MiniGames.Lobby.MGLobbyManager;
+import SmokyMiner.MiniGames.Lobby.MGMatchMaker;
 import SmokyMiner.Minigame.Main.MGManager;
 
 public class MGCommandJoin implements CommandExecutor
 {
-	private MGLobbyManager manager;
+	private MGMatchMaker manager;
 	private MGManager mgManager;
 	
 	public MGCommandJoin()
@@ -21,7 +21,7 @@ public class MGCommandJoin implements CommandExecutor
 		mgManager = null;
 	}
 	
-	public MGCommandJoin(MGManager mgManager, MGLobbyManager manager)
+	public MGCommandJoin(MGManager mgManager, MGMatchMaker manager)
 	{
 		this.manager = manager;
 		this.mgManager = mgManager;
@@ -47,7 +47,7 @@ public class MGCommandJoin implements CommandExecutor
     				if(mgManager != null && mgManager.plugin() != null)
     					p.sendMessage(ChatColor.YELLOW + "[" + mgManager.plugin().getName() + "] " + ChatColor.RED + "Error: You must leave the lobby before you can join another match!");
     			}
-    			else if(!manager.JoinMatch(p.getUniqueId()))
+    			else if(!manager.joinLobby(p.getUniqueId()))
     					if(mgManager !=null && mgManager.plugin() != null)
     						p.sendMessage(ChatColor.YELLOW + "[" + mgManager.plugin().getName() + "] " + ChatColor.RED + "Error: Failed to join match!" );
     			return true;

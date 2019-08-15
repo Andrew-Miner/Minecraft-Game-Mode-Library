@@ -11,7 +11,7 @@ public class MGColoredMenu extends MGInventoryMenu
 	public MGColoredMenu(JavaPlugin plugin, String name, int maxSlots, int color) 
 	{
 		super(plugin, name, maxSlots);
-		fillerItem = new MGMenuItem(plugin, Material.LEGACY_STAINED_GLASS_PANE, color, " ", null, (Sound) null);
+		fillerItem = new MGMenuItem(plugin, Material.GLASS_PANE, color, " ", null, (Sound) null);
 		fillMenu(fillerItem);
 	}
 	

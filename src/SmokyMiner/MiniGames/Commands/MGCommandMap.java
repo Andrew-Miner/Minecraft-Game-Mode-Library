@@ -16,8 +16,8 @@ import org.bukkit.entity.Player;
 import SmokyMiner.MiniGames.Commands.CommandHandler.MGCommandParser;
 import SmokyMiner.MiniGames.Commands.CommandHandler.MGCommandParser.command_info;
 import SmokyMiner.MiniGames.Commands.CommandHandler.MGParsedCommand;
-import SmokyMiner.MiniGames.Lobby.MGLobbyManager;
 import SmokyMiner.MiniGames.Lobby.MGLobbyTools;
+import SmokyMiner.MiniGames.Lobby.MGMatchMaker;
 import SmokyMiner.MiniGames.Maps.MGBound;
 import SmokyMiner.MiniGames.Maps.MGMapMetadata;
 import SmokyMiner.MiniGames.Maps.MGMapMethods;
@@ -35,9 +35,9 @@ import SmokyMiner.Minigame.Main.MGManager;
 public class MGCommandMap implements MGCommand
 {
 	MGManager mgManager;
-	MGLobbyManager manager;
+	MGMatchMaker manager;
 	
-	public MGCommandMap(MGManager mgManager, MGLobbyManager manager)
+	public MGCommandMap(MGManager mgManager, MGMatchMaker manager)
 	{
 		this.mgManager = mgManager;
 		this.manager = manager;
@@ -111,7 +111,6 @@ public class MGCommandMap implements MGCommand
 				String type = types.get(0);
 				if(arena != null)
 				{
-					
 					if(type.equalsIgnoreCase(MGCommandParser.command_info.INFO.string()))
 						displayMapInfo(command.getSender(), arena);
 					else if(type.equalsIgnoreCase(MGCommandParser.command_info.ENABLE.string()))
@@ -153,7 +152,6 @@ public class MGCommandMap implements MGCommand
 									else if(arType.equalsIgnoreCase(MGCommandParser.command_info.BOUND.string()))
 										return addBound(command, arena);
 								}
-								
 							}
 						}
 						else
@@ -164,8 +162,6 @@ public class MGCommandMap implements MGCommand
 					command.getSender().sendMessage(ChatColor.GOLD + MGManager.logPrefix + ChatColor.RED + " Map " + ChatColor.YELLOW +  arenaName + ChatColor.RED + " Doesn't Exists!");
 			}
 		}
-
-
 		return true;
 	}
 
@@ -292,7 +288,7 @@ public class MGCommandMap implements MGCommand
 		if(command.getSender() instanceof Player)
 		{
 			Player p = (Player) command.getSender();
-			MGPlayer pbp = manager.findPlayer(p.getUniqueId());
+			MGPlayer pbp = manager.getPlayer(p.getUniqueId());
 			
 			if(pbp == null)
 				return true;

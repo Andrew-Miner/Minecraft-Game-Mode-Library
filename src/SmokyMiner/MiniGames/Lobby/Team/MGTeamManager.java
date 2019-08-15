@@ -3,6 +3,8 @@ package SmokyMiner.MiniGames.Lobby.Team;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -183,6 +185,11 @@ public class MGTeamManager
 	
 	public void spawnTeams(MGMapMetadata map)
 	{
+	  spawnTeams(map, new HashMap<Integer, ItemStack>());
+	}
+	
+	public void spawnTeams(MGMapMetadata map, HashMap<Integer, ItemStack> kitItems)
+	{
 		HashMap<Integer, ArrayList<Location>> spawnPoints = map.getSpawnPoints();
 		int teamCount = map.getMaxTeams();
 		
@@ -197,6 +204,17 @@ public class MGTeamManager
 			ArrayList<Location> points = spawnPoints.get(i);
 			int teamSize = team.size();
 			MGSpawnKit kit = teamKit.get(team.getId());
+			
+			if(!kitItems.isEmpty())
+			{
+			  Iterator<Entry<Integer, ItemStack>> it = kitItems.entrySet().iterator();
+			  
+			  while(it.hasNext())
+			  {
+			    Map.Entry<Integer, ItemStack> pair = (Map.Entry<Integer, ItemStack>)it.next();
+			    kit.setItem(pair.getKey(), pair.getValue());
+			  }
+			}
 			
 			Bukkit.getLogger().info("Team Size: " + teamSize);
 			
